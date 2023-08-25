@@ -1,5 +1,5 @@
 import { useWeb3Contract } from "react-moralis";
-import { abi } from "./constants";
+import { abi } from "../constants";
 
 export default function useContractFunctions(contractAddress?: string) {
   const { runContractFunction: mintGood } = useWeb3Contract({

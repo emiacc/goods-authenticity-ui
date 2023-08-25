@@ -1,6 +1,5 @@
 import Header from "./Header";
-import OwnerWrapper from "./OwnerWrapper";
-import "./App.css";
+import OwnerWrapper from "./owner/OwnerWrapper";
 
 function App() {
   return (

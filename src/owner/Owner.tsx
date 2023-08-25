@@ -1,42 +1,32 @@
 import { useEffect, useState, useCallback } from "react";
 import { BigNumber } from "ethers";
-import { contractConfiguration } from "./constants";
-import useContractFunctions from "./useContractFunctions";
-import useContractEvents from "./useContractEvents";
+import {
+  ContractConfiguration,
+  GoodType,
+  ModalValuesType,
+  defaultModalValues
+} from "../common/types";
+import { contractConfiguration } from "../constants";
+import useContractFunctions from "../contract/useContractFunctions";
+import useContractEvents from "../contract/useContractEvents";
+import Good from "./Good";
+import Modal from "../common/Modal";
 
-type ContractConfiguration = {
-  [key: string]: {
-    contractAddress: string;
-    blockConfirmations: number;
-    wsProvider: string;
-  };
-};
-
-type GoodsByOwner = {
-  goodId: BigNumber;
-  name: string;
-  category: string;
-};
-
-export default function Owner({
-  account,
-  chainId
-}: {
+type OwnerProps = {
   account: string;
   chainId: number;
-}) {
-  const [goodsByOwner, setGoodsByOwner] = useState<GoodsByOwner[]>([]);
+};
+
+export default function Owner({ account, chainId }: OwnerProps) {
+  const [goodsByOwner, setGoodsByOwner] = useState<GoodType[]>([]);
+  const [modalValues, setModalValues] =
+    useState<ModalValuesType>(defaultModalValues);
   const contractConfig: ContractConfiguration = contractConfiguration;
   const { contractAddress, blockConfirmations, wsProvider } =
     contractConfig[chainId];
 
-  const {
-    mintGood,
-    safeTransferFrom,
-    getGoodName,
-    getGoodCategory,
-    getGoodsByOwner
-  } = useContractFunctions(contractAddress);
+  const { mintGood, getGoodName, getGoodCategory, getGoodsByOwner } =
+    useContractFunctions(contractAddress);
 
   const updateUI = useCallback(async () => {
     const goodsIdsByOwner = (await getGoodsByOwner({
@@ -49,7 +39,7 @@ export default function Owner({
       const category = (await getGoodCategory({
         params: { params: { goodId } }
       })) as string;
-      return { goodId, name, category } as GoodsByOwner;
+      return { goodId, name, category } as GoodType;
     });
     const formatedGoodsData = await Promise.all(getGoodsData);
     setGoodsByOwner(formatedGoodsData);
@@ -70,28 +60,20 @@ export default function Owner({
 
   return (
     <>
-      <div>
-        {goodsByOwner.map((g) => (
-          <li key={g.goodId.toString()}>
-            {g.category + ": " + g.name}
-            <button
-              onClick={() =>
-                safeTransferFrom({
-                  params: {
-                    params: {
-                      from: account,
-                      to: "0xaDDF7142B0c6d9BbEd4aBF73468E1C8EC2efF1b7",
-                      tokenId: g.goodId
-                    }
-                  }
-                })
-              }
-            >
-              Transfer
-            </button>
-          </li>
-        ))}
+      <div className="container my-12 mx-auto px-4 md:px-12">
+        <div className="flex flex-wrap -mx-1 lg:-mx-4">
+          {goodsByOwner.map((g) => (
+            <Good
+              key={g.goodId.toString()}
+              contractAddress={contractAddress}
+              good={g}
+              owner={account}
+              setModalValues={setModalValues}
+            />
+          ))}
+        </div>
       </div>
+
       <button
         onClick={() =>
           mintGood({
@@ -101,6 +83,8 @@ export default function Owner({
       >
         Mint
       </button>
+
+      <Modal {...modalValues} />
     </>
   );
 }

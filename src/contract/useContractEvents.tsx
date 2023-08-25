@@ -1,19 +1,14 @@
 import { useEffect, useState } from "react";
 import { BigNumber, ethers } from "ethers";
-import { abi } from "./constants";
-
-type GoodsByOwner = {
-  goodId: BigNumber;
-  name: string;
-  category: string;
-};
+import { GoodType } from "../common/types";
+import { abi } from "../constants";
 
 type UseContractEventsProps = {
   contractAddress: string;
   wsProvider: string;
   blockConfirmations: number;
   account: string;
-  setGoodsByOwner: React.Dispatch<React.SetStateAction<GoodsByOwner[]>>;
+  setGoodsByOwner: React.Dispatch<React.SetStateAction<GoodType[]>>;
   updateUI: () => Promise<void>;
 };
 
@@ -49,7 +44,7 @@ export default function useContractEvents({
         if (owner.toUpperCase() === account.toUpperCase()) {
           setGoodsByOwner((goods) => [
             ...goods,
-            { goodId, name: name + " pending", category }
+            { goodId, name, category, pending: true }
           ]);
         }
       }
@@ -60,7 +55,7 @@ export default function useContractEvents({
         setGoodsByOwner((goods) =>
           goods.map((g) => {
             if (g.goodId.eq(goodId)) {
-              return { ...g, name: g.name + " pending" };
+              return { ...g, pending: true };
             }
             return g;
           })
