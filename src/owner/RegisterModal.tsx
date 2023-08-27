@@ -55,7 +55,7 @@ export default function RegisterModal({
           width="100%"
         />
       </div>
-      <div className="py-6">
+      <div className="py-6 mb-4">
         <Input
           label="Category"
           id="categoryInputModal"

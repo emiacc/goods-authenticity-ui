@@ -68,15 +68,24 @@ export default function Good({
           <div className="m-3">
             <Blockie size={15} seed={goodId.toString()} />
           </div>
-          <p className="text-grey-darker text-lg">{category}</p>
-          <h1 className="text-2xl">{name}</h1>
+          <p
+            className="text-grey-darker text-lg w-11/12 text-center truncate"
+            title={category}
+          >
+            {category}
+          </p>
+          <h1 className="text-2xl w-11/12 text-center truncate" title={name}>
+            {name}
+          </h1>
           <button className="text-grey-darker text-sm"></button>
           <Button text="Transfer" onClick={handleClick} />
         </header>
         <footer className="flex flex-col p-6">
           <div className="flex items-center no-underline hover:underline text-black">
             <Blockie size={25} scale={1} seed={owner} />
-            <p className="ml-2 text-sm">{truncateStr(owner)}</p>
+            <p className="ml-2 text-base cursor-pointer" title={owner}>
+              {truncateStr(owner)}
+            </p>
           </div>
         </footer>
       </article>
