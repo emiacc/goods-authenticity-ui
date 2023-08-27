@@ -3,14 +3,17 @@ import { BigNumber } from "ethers";
 import {
   ContractConfiguration,
   GoodType,
-  ModalValuesType,
-  defaultModalValues
+  RegisterModalValuesType,
+  TransferModalValuesType,
+  defaultRegisterModalValues,
+  defaultTransferModalValues
 } from "../common/types";
 import { contractConfiguration } from "../constants";
 import useContractFunctions from "../contract/useContractFunctions";
 import useContractEvents from "../contract/useContractEvents";
 import Good from "./Good";
-import Modal from "../common/Modal";
+import TransferModal from "./TransferModal";
+import RegisterModal from "./RegisterModal";
 
 type OwnerProps = {
   account: string;
@@ -19,8 +22,10 @@ type OwnerProps = {
 
 export default function Owner({ account, chainId }: OwnerProps) {
   const [goodsByOwner, setGoodsByOwner] = useState<GoodType[]>([]);
-  const [modalValues, setModalValues] =
-    useState<ModalValuesType>(defaultModalValues);
+  const [transferModalValues, setTransferModalValues] =
+    useState<TransferModalValuesType>(defaultTransferModalValues);
+  const [registerModalValues, setRegisterModalValues] =
+    useState<RegisterModalValuesType>(defaultRegisterModalValues);
   const contractConfig: ContractConfiguration = contractConfiguration;
   const { contractAddress, blockConfirmations, wsProvider } =
     contractConfig[chainId];
@@ -68,23 +73,46 @@ export default function Owner({ account, chainId }: OwnerProps) {
               contractAddress={contractAddress}
               good={g}
               owner={account}
-              setModalValues={setModalValues}
+              setTransferModalValues={setTransferModalValues}
             />
           ))}
         </div>
       </div>
 
       <button
-        onClick={() =>
-          mintGood({
-            params: { params: { name: "ccc", category: "Peugeot" } }
-          })
-        }
+        onClick={() => {
+          setRegisterModalValues({
+            isVisible: true,
+            onClose: () => {
+              setRegisterModalValues(defaultRegisterModalValues);
+            },
+            onOk: (
+              name: string,
+              category: string,
+              setNameInputState,
+              setCategoryInputState
+            ) => {
+              if (name.length < 3 || name.length > 50) {
+                setNameInputState("error");
+                document.getElementById("nameInputModal")?.focus();
+              } else if (category.length < 3 || category.length > 50) {
+                setCategoryInputState("error");
+                document.getElementById("categoryInputModal")?.focus();
+              } else {
+                mintGood({
+                  params: { params: { name, category } }
+                });
+                setRegisterModalValues(defaultRegisterModalValues);
+              }
+            }
+          });
+        }}
       >
         Mint
       </button>
 
-      <Modal {...modalValues} />
+      <TransferModal {...transferModalValues} />
+      <RegisterModal {...registerModalValues} />
     </>
   );
 }

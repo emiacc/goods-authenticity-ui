@@ -1,4 +1,5 @@
 import { BigNumber } from "ethers";
+import { InputProps } from "web3uikit";
 
 export type GoodType = {
   goodId: BigNumber;
@@ -7,22 +8,34 @@ export type GoodType = {
   pending?: boolean;
 };
 
-export type ModalValuesType = {
+export type TransferModalValuesType = {
   isVisible: boolean;
-  title: string;
-  label: string;
-  placeholder: string;
-  state: "initial" | "error" | "confirmed" | "disabled" | undefined;
-  onOk: (inputValue: string) => void;
+  onOk: (
+    inputValue: string,
+    setInputState: React.Dispatch<React.SetStateAction<InputProps["state"]>>
+  ) => void;
   onClose: () => void;
 };
 
-export const defaultModalValues: ModalValuesType = {
+export const defaultTransferModalValues: TransferModalValuesType = {
   isVisible: false,
-  title: "",
-  label: "",
-  placeholder: "",
-  state: "initial",
+  onOk: () => {},
+  onClose: () => {}
+};
+
+export type RegisterModalValuesType = {
+  isVisible: boolean;
+  onOk: (
+    nameInputValue: string,
+    categoryInputValue: string,
+    setNameState: React.Dispatch<React.SetStateAction<InputProps["state"]>>,
+    setCategoryState: React.Dispatch<React.SetStateAction<InputProps["state"]>>
+  ) => void;
+  onClose: () => void;
+};
+
+export const defaultRegisterModalValues: RegisterModalValuesType = {
+  isVisible: false,
   onOk: () => {},
   onClose: () => {}
 };

@@ -1,28 +1,38 @@
 import { utils } from "ethers";
-import { Blockie } from "web3uikit";
+import { Blockie, InputProps } from "web3uikit";
 import useContractFunctions from "../contract/useContractFunctions";
 import { truncateStr } from "../common/utils";
 import Button from "../common/Button";
-import { GoodType, ModalValuesType, defaultModalValues } from "../common/types";
+import {
+  GoodType,
+  TransferModalValuesType,
+  defaultTransferModalValues
+} from "../common/types";
 
 type GoodProps = {
   contractAddress: string;
   good: GoodType;
   owner: string;
-  setModalValues: React.Dispatch<React.SetStateAction<ModalValuesType>>;
+  setTransferModalValues: React.Dispatch<
+    React.SetStateAction<TransferModalValuesType>
+  >;
 };
 
 export default function Good({
   contractAddress,
   good,
   owner,
-  setModalValues
+  setTransferModalValues
 }: GoodProps) {
   const { goodId, name, category, pending } = good;
   const { safeTransferFrom } = useContractFunctions(contractAddress);
-  const handleTransfer = (to: string) => {
+  const handleTransfer = (
+    to: string,
+    setAddressInputState: React.Dispatch<
+      React.SetStateAction<InputProps["state"]>
+    >
+  ) => {
     if (utils.isAddress(to) && owner.toUpperCase() !== to.toUpperCase()) {
-      setModalValues(defaultModalValues);
       safeTransferFrom({
         params: {
           params: {
@@ -32,20 +42,18 @@ export default function Good({
           }
         }
       });
+      setTransferModalValues(defaultTransferModalValues);
     } else {
-      setModalValues((modalValues) => ({ ...modalValues, state: "error" }));
+      setAddressInputState("error");
+      document.getElementById("transferInputModal")?.focus();
     }
   };
 
   const handleClick = () => {
-    setModalValues({
+    setTransferModalValues({
       isVisible: true,
-      title: "Transfer",
-      label: "Account",
-      placeholder: "0x0000000000000000000000000000000000000000",
-      state: "initial",
       onOk: handleTransfer,
-      onClose: () => setModalValues(defaultModalValues)
+      onClose: () => setTransferModalValues(defaultTransferModalValues)
     });
   };
 
