@@ -1,5 +1,6 @@
 import { useMoralis } from "react-moralis";
 import Owner from "./Owner";
+import GoodView from "../public/GoodView";
 
 export default function OwnerWrapper() {
   const { chainId: chainIdHex, isWeb3Enabled, account } = useMoralis();
@@ -9,5 +10,5 @@ export default function OwnerWrapper() {
     const props = { account, chainId };
     return <Owner {...props} />;
   }
-  return null;
+  return <GoodView />;
 }

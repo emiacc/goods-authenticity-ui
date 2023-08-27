@@ -29,7 +29,7 @@ export default function TransferModal({
       onCloseButtonPressed={onClose}
       onOk={() => onOk(addressInputValue, setAddressInputState)}
     >
-      <div className="py-6">
+      <div className="py-6 mb-4">
         <Input
           id="transferInputModal"
           label="Account"

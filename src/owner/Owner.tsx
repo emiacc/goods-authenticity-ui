@@ -11,6 +11,7 @@ import {
 } from "../common/types";
 import { contractConfiguration } from "../constants";
 import useContractFunctions from "../contract/useContractFunctions";
+import useContractPublicFunctions from "../contract/useContractPublicFunctions";
 import useContractEvents from "../contract/useContractEvents";
 import Good from "./Good";
 import TransferModal from "./TransferModal";
@@ -31,20 +32,15 @@ export default function Owner({ account, chainId }: OwnerProps) {
   const { contractAddress, blockConfirmations, wsProvider } =
     contractConfig[chainId];
 
-  const { mintGood, getGoodName, getGoodCategory, getGoodsByOwner } =
-    useContractFunctions(contractAddress);
+  const { getGoodName, getGoodCategory, getGoodsByOwner } =
+    useContractPublicFunctions({ contractAddress, wsProvider });
+  const { mintGood } = useContractFunctions(contractAddress);
 
   const updateUI = useCallback(async () => {
-    const goodsIdsByOwner = (await getGoodsByOwner({
-      params: { params: { owner: account } }
-    })) as BigNumber[];
+    const goodsIdsByOwner = await getGoodsByOwner(account);
     const getGoodsData = goodsIdsByOwner.map(async (goodId) => {
-      const name = (await getGoodName({
-        params: { params: { goodId } }
-      })) as string;
-      const category = (await getGoodCategory({
-        params: { params: { goodId } }
-      })) as string;
+      const name = await getGoodName(goodId);
+      const category = await getGoodCategory(goodId);
       return { goodId, name, category } as GoodType;
     });
     const formatedGoodsData = await Promise.all(getGoodsData);
@@ -55,12 +51,39 @@ export default function Owner({ account, chainId }: OwnerProps) {
     updateUI();
   }, [updateUI]);
 
+  const onGoodChange = (
+    goodId: BigNumber,
+    owner: string,
+    name: string,
+    category: string
+  ) => {
+    if (owner.toUpperCase() === account.toUpperCase()) {
+      setGoodsByOwner((goods) => [
+        ...goods,
+        { goodId, name, category, pending: true }
+      ]);
+    }
+  };
+
+  const onGoodTransfer = (from: string, goodId: BigNumber) => {
+    if (from.toUpperCase() === account.toUpperCase()) {
+      setGoodsByOwner((goods) =>
+        goods.map((g) => {
+          if (g.goodId.eq(goodId)) {
+            return { ...g, pending: true };
+          }
+          return g;
+        })
+      );
+    }
+  };
+
   useContractEvents({
     contractAddress,
     wsProvider,
     blockConfirmations,
-    account,
-    setGoodsByOwner,
+    onGoodChange,
+    onGoodTransfer,
     updateUI
   });
 

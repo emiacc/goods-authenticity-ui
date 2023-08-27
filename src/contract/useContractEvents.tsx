@@ -1,14 +1,18 @@
 import { useEffect, useState } from "react";
 import { BigNumber, ethers } from "ethers";
-import { GoodType } from "../common/types";
 import { abi } from "../constants";
 
 type UseContractEventsProps = {
   contractAddress: string;
   wsProvider: string;
   blockConfirmations: number;
-  account: string;
-  setGoodsByOwner: React.Dispatch<React.SetStateAction<GoodType[]>>;
+  onGoodChange: (
+    goodId: BigNumber,
+    owner: string,
+    name: string,
+    category: string
+  ) => void;
+  onGoodTransfer: (from: string, goodId: BigNumber) => void;
   updateUI: () => Promise<void>;
 };
 
@@ -16,58 +20,37 @@ export default function useContractEvents({
   contractAddress,
   wsProvider,
   blockConfirmations,
-  account,
-  setGoodsByOwner,
+  onGoodChange,
+  onGoodTransfer,
   updateUI
 }: UseContractEventsProps) {
   const [latestBlockNumber, setLatestBlockNumber] = useState<number>(0);
   const [confirmationsCount, setConfirmationsCount] = useState<number>(0);
 
   useEffect(() => {
-    const webSocketProvider = new ethers.providers.WebSocketProvider(
-      wsProvider
-    );
+    const provider = new ethers.providers.WebSocketProvider(wsProvider);
+    const contract = new ethers.Contract(contractAddress, abi, provider);
 
-    const contract = new ethers.Contract(
-      contractAddress,
-      abi,
-      webSocketProvider
-    );
-
-    webSocketProvider.on("block", (blockNumber) => {
+    provider.on("block", (blockNumber) => {
       setLatestBlockNumber(blockNumber);
     });
 
     contract.on(
       "GoodChanged",
       (goodId: BigNumber, owner: string, name: string, category: string) => {
-        if (owner.toUpperCase() === account.toUpperCase()) {
-          setGoodsByOwner((goods) => [
-            ...goods,
-            { goodId, name, category, pending: true }
-          ]);
-        }
+        onGoodChange(goodId, owner, name, category);
       }
     );
 
     contract.on("Transfer", (from: string, _, goodId: BigNumber) => {
-      if (from.toUpperCase() === account.toUpperCase()) {
-        setGoodsByOwner((goods) =>
-          goods.map((g) => {
-            if (g.goodId.eq(goodId)) {
-              return { ...g, pending: true };
-            }
-            return g;
-          })
-        );
-      }
+      onGoodTransfer(from, goodId);
     });
 
     return () => {
-      webSocketProvider.removeAllListeners();
+      provider.removeAllListeners();
       contract.removeAllListeners();
     };
-  }, [account, contractAddress, setGoodsByOwner, wsProvider]);
+  }, [contractAddress, onGoodChange, onGoodTransfer, wsProvider]);
 
   useEffect(() => {
     if (latestBlockNumber) {
