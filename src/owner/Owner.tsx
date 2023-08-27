@@ -9,7 +9,6 @@ import {
   defaultRegisterModalValues,
   defaultTransferModalValues
 } from "../common/types";
-import { contractConfiguration } from "../constants";
 import useContractFunctions from "../contract/useContractFunctions";
 import useContractPublicFunctions from "../contract/useContractPublicFunctions";
 import useContractEvents from "../contract/useContractEvents";
@@ -19,18 +18,16 @@ import RegisterModal from "./RegisterModal";
 
 type OwnerProps = {
   account: string;
-  chainId: number;
+  contractConfigs: ContractConfiguration[""];
 };
 
-export default function Owner({ account, chainId }: OwnerProps) {
+export default function Owner({ account, contractConfigs }: OwnerProps) {
   const [goodsByOwner, setGoodsByOwner] = useState<GoodType[]>([]);
   const [transferModalValues, setTransferModalValues] =
     useState<TransferModalValuesType>(defaultTransferModalValues);
   const [registerModalValues, setRegisterModalValues] =
     useState<RegisterModalValuesType>(defaultRegisterModalValues);
-  const contractConfig: ContractConfiguration = contractConfiguration;
-  const { contractAddress, blockConfirmations, wsProvider } =
-    contractConfig[chainId];
+  const { contractAddress, blockConfirmations, wsProvider } = contractConfigs;
 
   const { getGoodName, getGoodCategory, getGoodsByOwner } =
     useContractPublicFunctions({ contractAddress, wsProvider });
