@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Modal as Web3Modal, Input, InputProps } from "web3uikit";
+import { Modal, Input, InputProps } from "web3uikit";
 import { RegisterModalValuesType } from "../common/types";
 
 export default function RegisterModal({
@@ -24,7 +24,7 @@ export default function RegisterModal({
   }, [isVisible]);
 
   return (
-    <Web3Modal
+    <Modal
       cancelText="Cancel"
       id="regular"
       okText="Register"
@@ -69,6 +69,6 @@ export default function RegisterModal({
           width="100%"
         />
       </div>
-    </Web3Modal>
+    </Modal>
   );
 }

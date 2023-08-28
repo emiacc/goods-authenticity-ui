@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Modal as Web3Modal, Input, InputProps } from "web3uikit";
+import { Modal, Input, InputProps } from "web3uikit";
 import { TransferModalValuesType } from "../common/types";
 
 export default function TransferModal({
@@ -19,7 +19,7 @@ export default function TransferModal({
   }, [isVisible]);
 
   return (
-    <Web3Modal
+    <Modal
       cancelText="Cancel"
       id="regular"
       okText="Transfer"
@@ -44,6 +44,6 @@ export default function TransferModal({
           width="100%"
         />
       </div>
-    </Web3Modal>
+    </Modal>
   );
 }

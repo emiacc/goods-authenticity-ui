@@ -6,8 +6,10 @@ import {
   GoodType,
   RegisterModalValuesType,
   TransferModalValuesType,
+  HistoryModalValuesType,
   defaultRegisterModalValues,
-  defaultTransferModalValues
+  defaultTransferModalValues,
+  defaultHistoryModalValues
 } from "../common/types";
 import useContractFunctions from "../contract/useContractFunctions";
 import useContractPublicFunctions from "../contract/useContractPublicFunctions";
@@ -15,6 +17,7 @@ import useContractEvents from "../contract/useContractEvents";
 import Good from "./Good";
 import TransferModal from "./TransferModal";
 import RegisterModal from "./RegisterModal";
+import HistoryModal from "./HistoryModal";
 
 type OwnerProps = {
   account: string;
@@ -27,9 +30,11 @@ export default function Owner({ account, contractConfigs }: OwnerProps) {
     useState<TransferModalValuesType>(defaultTransferModalValues);
   const [registerModalValues, setRegisterModalValues] =
     useState<RegisterModalValuesType>(defaultRegisterModalValues);
+  const [historyModalValues, setHistoryModalValues] =
+    useState<HistoryModalValuesType>(defaultHistoryModalValues);
   const { contractAddress, blockConfirmations, wsProvider } = contractConfigs;
 
-  const { getGoodName, getGoodCategory, getGoodsByOwner } =
+  const { getGoodName, getGoodCategory, getGoodsByOwner, getGoodOwnerHistory } =
     useContractPublicFunctions({ contractAddress, wsProvider });
   const { mintGood } = useContractFunctions(contractAddress);
 
@@ -94,7 +99,9 @@ export default function Owner({ account, contractConfigs }: OwnerProps) {
               contractAddress={contractAddress}
               good={g}
               owner={account}
+              getGoodOwnerHistory={getGoodOwnerHistory}
               setTransferModalValues={setTransferModalValues}
+              setHistoryModalValues={setHistoryModalValues}
             />
           ))}
         </div>
@@ -139,6 +146,7 @@ export default function Owner({ account, contractConfigs }: OwnerProps) {
       </div>
       <TransferModal {...transferModalValues} />
       <RegisterModal {...registerModalValues} />
+      <HistoryModal {...historyModalValues} />
     </>
   );
 }

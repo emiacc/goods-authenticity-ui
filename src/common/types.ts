@@ -40,6 +40,20 @@ export const defaultRegisterModalValues: RegisterModalValuesType = {
   onClose: () => {}
 };
 
+export type HistoryModalValuesType = {
+  isVisible: boolean;
+  list: string[];
+  onOk: () => void;
+  onClose: () => void;
+};
+
+export const defaultHistoryModalValues: HistoryModalValuesType = {
+  isVisible: false,
+  list: [],
+  onOk: () => {},
+  onClose: () => {}
+};
+
 export type ContractConfiguration = {
   [key: string]: {
     contractAddress: string;

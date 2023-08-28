@@ -1,20 +1,27 @@
-import { utils } from "ethers";
-import { Blockie, InputProps } from "web3uikit";
+import { BigNumber, utils } from "ethers";
+import { Blockie, InputProps, Loading } from "web3uikit";
 import useContractFunctions from "../contract/useContractFunctions";
 import { truncateStr } from "../common/utils";
 import Button from "../common/Button";
 import {
   GoodType,
+  HistoryModalValuesType,
   TransferModalValuesType,
+  defaultHistoryModalValues,
   defaultTransferModalValues
 } from "../common/types";
+import { useState } from "react";
 
 type GoodProps = {
   contractAddress: string;
   good: GoodType;
   owner: string;
+  getGoodOwnerHistory: (goodId: BigNumber) => Promise<string[]>;
   setTransferModalValues: React.Dispatch<
     React.SetStateAction<TransferModalValuesType>
+  >;
+  setHistoryModalValues: React.Dispatch<
+    React.SetStateAction<HistoryModalValuesType>
   >;
 };
 
@@ -22,10 +29,15 @@ export default function Good({
   contractAddress,
   good,
   owner,
-  setTransferModalValues
+  getGoodOwnerHistory,
+  setTransferModalValues,
+  setHistoryModalValues
 }: GoodProps) {
   const { goodId, name, category, pending } = good;
+  const [isLoadingHistory, setIsLoadingHistory] = useState(false);
+
   const { safeTransferFrom } = useContractFunctions(contractAddress);
+
   const handleTransfer = (
     to: string,
     setAddressInputState: React.Dispatch<
@@ -49,12 +61,26 @@ export default function Good({
     }
   };
 
-  const handleClick = () => {
+  const handleTransferClick = () => {
     setTransferModalValues({
       isVisible: true,
       onOk: handleTransfer,
       onClose: () => setTransferModalValues(defaultTransferModalValues)
     });
+  };
+
+  const handleHistoryClick = async () => {
+    setIsLoadingHistory(true);
+    getGoodOwnerHistory(goodId)
+      .then((list) =>
+        setHistoryModalValues({
+          isVisible: true,
+          list,
+          onOk: () => setHistoryModalValues(defaultHistoryModalValues),
+          onClose: () => setHistoryModalValues(defaultHistoryModalValues)
+        })
+      )
+      .finally(() => setIsLoadingHistory(false));
   };
 
   return (
@@ -78,15 +104,22 @@ export default function Good({
             {name}
           </h1>
           <button className="text-grey-darker text-sm"></button>
-          <Button text="Transfer" onClick={handleClick} />
+          <Button text="Transfer" onClick={handleTransferClick} />
         </header>
         <footer className="flex flex-col p-6">
-          <div className="flex items-center no-underline hover:underline text-black">
-            <Blockie size={25} scale={1} seed={owner} />
-            <p className="ml-2 text-base cursor-pointer" title={owner}>
-              {truncateStr(owner)}
-            </p>
-          </div>
+          {isLoadingHistory ? (
+            <Loading spinnerColor="gray" />
+          ) : (
+            <div
+              className="flex items-center no-underline hover:underline text-black cursor-pointer"
+              onClick={handleHistoryClick}
+            >
+              <Blockie size={25} scale={1} seed={owner} />
+              <p className="ml-2 text-base" title={owner}>
+                {truncateStr(owner)}
+              </p>
+            </div>
+          )}
         </footer>
       </article>
     </div>
