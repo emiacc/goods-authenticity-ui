@@ -6,3 +6,8 @@
   width: 70vw;
   max-width: 500px;
 }
+
+#regular #content {
+  max-height: 55vh;
+  overflow: scroll;
+}

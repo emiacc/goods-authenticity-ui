@@ -1,5 +1,5 @@
 import { Modal, CopyButton } from "web3uikit";
-import { HistoryModalValuesType } from "../common/types";
+import { HistoryModalValuesType } from "./types";
 
 export default function HistoryModal({
   isVisible,

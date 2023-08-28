@@ -6,14 +6,14 @@ type UseContractEventsProps = {
   contractAddress: string;
   wsProvider: string;
   blockConfirmations: number;
-  onGoodChange: (
+  onGoodChange?: (
     goodId: BigNumber,
     owner: string,
     name: string,
     category: string
   ) => void;
-  onGoodTransfer: (from: string, goodId: BigNumber) => void;
-  updateUI: () => Promise<void>;
+  onGoodTransfer?: (from: string, goodId: BigNumber) => void;
+  updateUI?: () => Promise<void>;
 };
 
 export default function useContractEvents({
@@ -35,16 +35,20 @@ export default function useContractEvents({
       setLatestBlockNumber(blockNumber);
     });
 
-    contract.on(
-      "GoodChanged",
-      (goodId: BigNumber, owner: string, name: string, category: string) => {
-        onGoodChange(goodId, owner, name, category);
-      }
-    );
+    if (onGoodChange) {
+      contract.on(
+        "GoodChanged",
+        (goodId: BigNumber, owner: string, name: string, category: string) => {
+          onGoodChange(goodId, owner, name, category);
+        }
+      );
+    }
 
-    contract.on("Transfer", (from: string, _, goodId: BigNumber) => {
-      onGoodTransfer(from, goodId);
-    });
+    if (onGoodTransfer) {
+      contract.on("Transfer", (from: string, _, goodId: BigNumber) => {
+        onGoodTransfer(from, goodId);
+      });
+    }
 
     return () => {
       provider.removeAllListeners();
@@ -61,7 +65,7 @@ export default function useContractEvents({
   useEffect(() => {
     if (blockConfirmations && confirmationsCount >= blockConfirmations) {
       setConfirmationsCount(0);
-      updateUI();
+      updateUI && updateUI();
     }
   }, [blockConfirmations, confirmationsCount, updateUI]);
 }

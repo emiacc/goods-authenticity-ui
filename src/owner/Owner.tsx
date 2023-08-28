@@ -14,10 +14,10 @@ import {
 import useContractFunctions from "../contract/useContractFunctions";
 import useContractPublicFunctions from "../contract/useContractPublicFunctions";
 import useContractEvents from "../contract/useContractEvents";
-import Good from "./Good";
+import Good from "./OwnerGood";
 import TransferModal from "./TransferModal";
 import RegisterModal from "./RegisterModal";
-import HistoryModal from "./HistoryModal";
+import HistoryModal from "../common/HistoryModal";
 
 type OwnerProps = {
   account: string;

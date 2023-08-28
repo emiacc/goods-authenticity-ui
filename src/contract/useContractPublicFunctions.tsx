@@ -7,7 +7,7 @@ type UseContractPublicFunctionsProps = {
   wsProvider: string;
 };
 
-export default function useContractEvents({
+export default function useContractPublicFunctions({
   contractAddress,
   wsProvider
 }: UseContractPublicFunctionsProps) {

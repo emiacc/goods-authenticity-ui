@@ -1,8 +1,6 @@
 import { BigNumber, utils } from "ethers";
-import { Blockie, InputProps, Loading } from "web3uikit";
+import { InputProps } from "web3uikit";
 import useContractFunctions from "../contract/useContractFunctions";
-import { truncateStr } from "../common/utils";
-import Button from "../common/Button";
 import {
   GoodType,
   HistoryModalValuesType,
@@ -11,8 +9,9 @@ import {
   defaultTransferModalValues
 } from "../common/types";
 import { useState } from "react";
+import Good from "../common/Good";
 
-type GoodProps = {
+type OwnerGoodProps = {
   contractAddress: string;
   good: GoodType;
   owner: string;
@@ -25,14 +24,14 @@ type GoodProps = {
   >;
 };
 
-export default function Good({
+export default function OwnerGood({
   contractAddress,
   good,
   owner,
   getGoodOwnerHistory,
   setTransferModalValues,
   setHistoryModalValues
-}: GoodProps) {
+}: OwnerGoodProps) {
   const { goodId, name, category, pending } = good;
   const [isLoadingHistory, setIsLoadingHistory] = useState(false);
 
@@ -85,43 +84,18 @@ export default function Good({
 
   return (
     <div className="my-1 px-1 w-1/2 md:w-1/3 lg:my-4 lg:px-4 lg:w-1/4">
-      <article
-        className={`overflow-hidden rounded-lg shadow-lg ${
-          pending ? "bg-gray-200" : ""
-        }`}
-      >
-        <header className="flex flex-col space-y-2 items-center justify-between p-2 md:p-4">
-          <div className="m-3">
-            <Blockie size={15} seed={goodId.toString()} />
-          </div>
-          <p
-            className="text-grey-darker text-lg w-11/12 text-center truncate"
-            title={category}
-          >
-            {category}
-          </p>
-          <h1 className="text-2xl w-11/12 text-center truncate" title={name}>
-            {name}
-          </h1>
-          <button className="text-grey-darker text-sm"></button>
-          <Button text="Transfer" onClick={handleTransferClick} />
-        </header>
-        <footer className="flex flex-col p-6">
-          {isLoadingHistory ? (
-            <Loading spinnerColor="gray" />
-          ) : (
-            <div
-              className="flex items-center no-underline hover:underline text-black cursor-pointer"
-              onClick={handleHistoryClick}
-            >
-              <Blockie size={25} scale={1} seed={owner} />
-              <p className="ml-2 text-base" title={owner}>
-                {truncateStr(owner)}
-              </p>
-            </div>
-          )}
-        </footer>
-      </article>
+      <Good
+        {...{
+          goodId,
+          name,
+          category,
+          owner,
+          pending,
+          isLoadingHistory,
+          handleHistoryClick,
+          handleTransferClick
+        }}
+      />
     </div>
   );
 }
