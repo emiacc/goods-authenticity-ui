@@ -11,6 +11,7 @@ type GoodProps = {
   owner: string;
   isLoadingHistory?: boolean;
   handleTransferClick?: () => void;
+  handleAvatarClick?: (goodId: string) => void;
   handleHistoryClick: () => void;
 };
 
@@ -21,6 +22,7 @@ export default function Good({
   category,
   owner,
   isLoadingHistory,
+  handleAvatarClick,
   handleTransferClick,
   handleHistoryClick
 }: GoodProps) {
@@ -31,7 +33,12 @@ export default function Good({
       }`}
     >
       <header className="flex flex-col space-y-2 items-center justify-between p-2 md:p-4">
-        <div className="m-3">
+        <div
+          className={`m-3 ${handleAvatarClick ? "cursor-pointer" : ""}`}
+          onClick={() =>
+            handleAvatarClick && handleAvatarClick(goodId.toString())
+          }
+        >
           <Blockie size={15} seed={goodId.toString()} />
         </div>
         <p

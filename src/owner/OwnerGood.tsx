@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { BigNumber, utils } from "ethers";
 import { InputProps } from "web3uikit";
 import useContractFunctions from "../contract/useContractFunctions";
@@ -8,13 +9,14 @@ import {
   defaultHistoryModalValues,
   defaultTransferModalValues
 } from "../common/types";
-import { useState } from "react";
 import Good from "../common/Good";
+import { compareAddresses } from "../common/utils";
 
 type OwnerGoodProps = {
   contractAddress: string;
   good: GoodType;
   owner: string;
+  handleAvatarClick: (goodId: string) => void;
   getGoodOwnerHistory: (goodId: BigNumber) => Promise<string[]>;
   setTransferModalValues: React.Dispatch<
     React.SetStateAction<TransferModalValuesType>
@@ -28,6 +30,7 @@ export default function OwnerGood({
   contractAddress,
   good,
   owner,
+  handleAvatarClick,
   getGoodOwnerHistory,
   setTransferModalValues,
   setHistoryModalValues
@@ -43,7 +46,7 @@ export default function OwnerGood({
       React.SetStateAction<InputProps["state"]>
     >
   ) => {
-    if (utils.isAddress(to) && owner.toUpperCase() !== to.toUpperCase()) {
+    if (utils.isAddress(to) && !compareAddresses(owner, to)) {
       safeTransferFrom({
         params: {
           params: {
@@ -93,6 +96,7 @@ export default function OwnerGood({
           pending,
           isLoadingHistory,
           handleHistoryClick,
+          handleAvatarClick,
           handleTransferClick
         }}
       />

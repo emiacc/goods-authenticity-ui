@@ -14,18 +14,27 @@ import {
 import useContractFunctions from "../contract/useContractFunctions";
 import useContractPublicFunctions from "../contract/useContractPublicFunctions";
 import useContractEvents from "../contract/useContractEvents";
-import Good from "./OwnerGood";
+import OwnerGood from "./OwnerGood";
 import TransferModal from "./TransferModal";
 import RegisterModal from "./RegisterModal";
 import HistoryModal from "../common/HistoryModal";
+import GoodQr from "./GoodQr";
+import { compareAddresses } from "../common/utils";
 
 type OwnerProps = {
   account: string;
+  chainId: number;
   contractConfigs: ContractConfiguration[""];
 };
 
-export default function Owner({ account, contractConfigs }: OwnerProps) {
+export default function Owner({
+  account,
+  chainId,
+  contractConfigs
+}: OwnerProps) {
   const [goodsByOwner, setGoodsByOwner] = useState<GoodType[]>([]);
+  const [params, setParams] = useState<URLSearchParams>();
+  const [isQrVisible, setIsQrVisible] = useState(false);
   const [transferModalValues, setTransferModalValues] =
     useState<TransferModalValuesType>(defaultTransferModalValues);
   const [registerModalValues, setRegisterModalValues] =
@@ -59,7 +68,7 @@ export default function Owner({ account, contractConfigs }: OwnerProps) {
     name: string,
     category: string
   ) => {
-    if (owner.toUpperCase() === account.toUpperCase()) {
+    if (compareAddresses(owner, account)) {
       setGoodsByOwner((goods) => [
         ...goods,
         { goodId, name, category, pending: true }
@@ -68,7 +77,7 @@ export default function Owner({ account, contractConfigs }: OwnerProps) {
   };
 
   const onGoodTransfer = (from: string, goodId: BigNumber) => {
-    if (from.toUpperCase() === account.toUpperCase()) {
+    if (compareAddresses(from, account)) {
       setGoodsByOwner((goods) =>
         goods.map((g) => {
           if (g.goodId.eq(goodId)) {
@@ -78,6 +87,15 @@ export default function Owner({ account, contractConfigs }: OwnerProps) {
         })
       );
     }
+  };
+
+  const handleAvatarClick = (goodId: string) => {
+    const urlParams = new URLSearchParams({
+      goodId,
+      chainId: chainId.toString()
+    });
+    setParams(urlParams);
+    setIsQrVisible(true);
   };
 
   useContractEvents({
@@ -94,11 +112,12 @@ export default function Owner({ account, contractConfigs }: OwnerProps) {
       <div className="container my-12 mx-auto px-4 md:px-12">
         <div className="flex flex-wrap -mx-1 lg:-mx-4">
           {goodsByOwner.map((g) => (
-            <Good
+            <OwnerGood
               key={g.goodId.toString()}
               contractAddress={contractAddress}
               good={g}
               owner={account}
+              handleAvatarClick={handleAvatarClick}
               getGoodOwnerHistory={getGoodOwnerHistory}
               setTransferModalValues={setTransferModalValues}
               setHistoryModalValues={setHistoryModalValues}
@@ -147,6 +166,11 @@ export default function Owner({ account, contractConfigs }: OwnerProps) {
       <TransferModal {...transferModalValues} />
       <RegisterModal {...registerModalValues} />
       <HistoryModal {...historyModalValues} />
+      <GoodQr
+        isVisible={isQrVisible}
+        setIsVisible={setIsQrVisible}
+        src={location.origin + "?" + params}
+      />
     </>
   );
 }

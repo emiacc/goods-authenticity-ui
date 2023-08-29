@@ -11,3 +11,9 @@
   max-height: 55vh;
   overflow: scroll;
 }
+
+@media print {
+  #closeGoodQr, #downloadGoodQr {
+    display: none;
+  }
+}

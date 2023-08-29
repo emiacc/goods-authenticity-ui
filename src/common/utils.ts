@@ -12,3 +12,7 @@ export const truncateStr = (fullStr: string, strLen = 15) => {
     fullStr.substring(fullStr.length - backChars)
   );
 };
+
+export const compareAddresses = (address1: string, address2: string) => {
+  return address1.toUpperCase() === address2.toUpperCase();
+};
