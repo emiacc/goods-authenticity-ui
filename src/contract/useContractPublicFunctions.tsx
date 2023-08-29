@@ -33,7 +33,9 @@ export default function useContractPublicFunctions({
 
   const getGoodOwnerHistory = useCallback(
     (goodId: BigNumber): Promise<string[]> =>
-      contract.getGoodOwnerHistory(goodId),
+      contract
+        .getGoodOwnerHistory(goodId)
+        .then((result: string[]) => result.map((a) => a.toLowerCase())),
     [contract]
   );
 

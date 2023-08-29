@@ -19,7 +19,11 @@ export default function OwnerWrapper() {
   }
 
   if (isWeb3Enabled && account && contractConfigs) {
-    const props = { account, contractConfigs, chainId };
+    const props = {
+      account: account.toLowerCase(),
+      contractConfigs,
+      chainId
+    };
     return <Owner {...props} />;
   }
 }

@@ -1,7 +1,9 @@
+import { useRef } from "react";
 import { QRCodeSVG } from "qrcode.react";
 import { Button } from "web3uikit";
+import useOutsideClick from "../common/useOutsideClick";
 
-export default function OwnerGood({
+export default function GoodQr({
   src,
   isVisible,
   setIsVisible
@@ -10,8 +12,13 @@ export default function OwnerGood({
   isVisible: boolean;
   setIsVisible: React.Dispatch<React.SetStateAction<boolean>>;
 }) {
+  const ref = useRef<HTMLDivElement>(null);
+  const target = useRef<HTMLDivElement>(null);
+  useOutsideClick(ref, target, () => setIsVisible(false));
+
   return (
     <div
+      ref={ref}
       className={`${
         isVisible ? "flex" : "hidden"
       } fixed top-0 left-0 w-screen h-screen bg-black/80 justify-center items-center`}
@@ -23,7 +30,10 @@ export default function OwnerGood({
       >
         &times;
       </span>
-      <div className="flex flex-col space-y-10 items-center h-fit p-16 bg-white rounded-2xl">
+      <div
+        ref={target}
+        className="flex flex-col space-y-10 -mt-4 items-center h-fit p-16 bg-white rounded-2xl"
+      >
         <QRCodeSVG
           height={240}
           width={240}
