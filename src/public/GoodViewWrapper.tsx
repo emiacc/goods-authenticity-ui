@@ -1,5 +1,6 @@
 import { contractConfiguration } from "../constants";
 import { ContractConfiguration } from "../common/types";
+import NetworkError from "../common/NetworkError";
 import GoodView from "./GoodView";
 
 export default function GoodViewWrapper({
@@ -14,7 +15,7 @@ export default function GoodViewWrapper({
   ];
 
   if (!contractConfigs) {
-    return <div>Network not supported</div>;
+    return <NetworkError />;
   }
 
   return <GoodView {...{ goodId, contractConfigs }} />;

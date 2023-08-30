@@ -9,6 +9,7 @@ import Good from "../common/Good";
 import HistoryModal from "../common/HistoryModal";
 import useContractEvents from "../contract/useContractEvents";
 import useContractPublicFunctions from "../contract/useContractPublicFunctions";
+import Error from "../common/Error";
 
 type GoodViewProps = {
   goodId: string;
@@ -97,7 +98,18 @@ export default function GoodView({ goodId, contractConfigs }: GoodViewProps) {
       onClose: () => setHistoryModalValues(defaultHistoryModalValues)
     });
 
-  if (hasError) return <div>Error</div>;
+  if (hasError) {
+    return (
+      <Error
+        title="Item not found"
+        message={
+          <a className="underline" href="/">
+            Reload
+          </a>
+        }
+      />
+    );
+  }
 
   return goodInfo ? (
     <>

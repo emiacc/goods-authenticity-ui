@@ -2,6 +2,8 @@ import { useMoralis } from "react-moralis";
 import { contractConfiguration } from "../constants";
 import { ContractConfiguration } from "../common/types";
 import Owner from "./Owner";
+import Error from "../common/Error";
+import NetworkError from "../common/NetworkError";
 
 export default function OwnerWrapper() {
   const { chainId: chainIdHex, isWeb3Enabled, account } = useMoralis();
@@ -11,11 +13,11 @@ export default function OwnerWrapper() {
   ];
 
   if (chainId && !contractConfigs) {
-    return <div>Network not supported</div>;
+    return <NetworkError />;
   }
 
   if (!isWeb3Enabled) {
-    return <div>Connect to a wallet</div>;
+    return <Error title="Connect to a Wallet" />;
   }
 
   if (isWeb3Enabled && account && contractConfigs) {
