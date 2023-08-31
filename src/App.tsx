@@ -5,15 +5,21 @@ import GoodViewWrapper from "./public/GoodViewWrapper";
 function App() {
   let goodId: string | null = null;
   let chainId: string | null = null;
+  let nonce: string | null = null;
   const searchParams = new URLSearchParams(location.search);
 
-  if (searchParams.size) {
-    if (searchParams.has("goodId") && searchParams.has("chainId")) {
+  if (Array.from(searchParams.values()).length) {
+    if (
+      searchParams.has("goodId") &&
+      searchParams.has("chainId") &&
+      searchParams.has("nonce")
+    ) {
       goodId = searchParams.get("goodId");
       chainId = searchParams.get("chainId");
+      nonce = searchParams.get("nonce");
     }
 
-    if (!goodId || !chainId) {
+    if (!goodId || !chainId || !nonce) {
       history.replaceState({}, document.title, location.pathname);
     }
   }
@@ -21,8 +27,8 @@ function App() {
   return (
     <>
       <Header />
-      {goodId && chainId ? (
-        <GoodViewWrapper {...{ goodId, chainId }} />
+      {goodId && chainId && nonce ? (
+        <GoodViewWrapper {...{ goodId, chainId, nonce }} />
       ) : (
         <OwnerWrapper />
       )}

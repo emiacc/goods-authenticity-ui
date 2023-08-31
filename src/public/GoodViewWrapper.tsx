@@ -5,10 +5,12 @@ import GoodView from "./GoodView";
 
 export default function GoodViewWrapper({
   goodId,
-  chainId
+  chainId,
+  nonce
 }: {
   goodId: string;
   chainId: string;
+  nonce: string;
 }) {
   const contractConfigs = (contractConfiguration as ContractConfiguration)[
     chainId
@@ -18,5 +20,5 @@ export default function GoodViewWrapper({
     return <NetworkError />;
   }
 
-  return <GoodView {...{ goodId, contractConfigs }} />;
+  return <GoodView {...{ goodId, nonce, contractConfigs }} />;
 }

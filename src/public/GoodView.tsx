@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { BigNumber } from "ethers";
 import {
   ContractConfiguration,
@@ -10,9 +10,11 @@ import HistoryModal from "../common/HistoryModal";
 import useContractEvents from "../contract/useContractEvents";
 import useContractPublicFunctions from "../contract/useContractPublicFunctions";
 import Error from "../common/Error";
+import { Loading } from "web3uikit";
 
 type GoodViewProps = {
   goodId: string;
+  nonce: string;
   contractConfigs: ContractConfiguration[""];
 };
 
@@ -23,9 +25,14 @@ type GoodViewInfo = {
   history: string[];
 };
 
-export default function GoodView({ goodId, contractConfigs }: GoodViewProps) {
+export default function GoodView({
+  goodId,
+  nonce,
+  contractConfigs
+}: GoodViewProps) {
   const goodIdBigNumber = useMemo(() => BigNumber.from(goodId), [goodId]);
   const [hasError, setHasError] = useState(false);
+  const [isFetching, setIsFetching] = useState<boolean>(false);
   const [goodInfo, setGoodInfo] = useState<GoodViewInfo>();
   const [historyModalValues, setHistoryModalValues] =
     useState<HistoryModalValuesType>(defaultHistoryModalValues);
@@ -43,27 +50,41 @@ export default function GoodView({ goodId, contractConfigs }: GoodViewProps) {
         const name = await getGoodName(goodIdBigNumber);
         const category = await getGoodCategory(goodIdBigNumber);
         const history = await getGoodOwnerHistory(goodIdBigNumber);
-        setGoodInfo({ name, category, history, pending: false });
+        if (parseInt(nonce) === history.length) {
+          setGoodInfo({ name, category, history, pending: false });
+        } else {
+          setHasError(true);
+        }
       } catch (e) {
         setHasError(true);
       }
     };
 
     history.replaceState({}, document.title, location.pathname);
-    getGoodInfo();
-  }, [getGoodName, getGoodCategory, getGoodOwnerHistory, goodIdBigNumber]);
+    setIsFetching(true);
+    getGoodInfo().finally(() => setIsFetching(false));
+  }, [
+    getGoodName,
+    getGoodCategory,
+    getGoodOwnerHistory,
+    goodIdBigNumber,
+    nonce
+  ]);
 
-  const onGoodTransfer = (_: string, goodId: BigNumber) => {
-    if (goodId.eq(goodIdBigNumber)) {
-      setGoodInfo((goodInfo) => {
-        if (goodInfo) {
-          return { ...goodInfo, pending: true };
-        }
-      });
-    }
-  };
+  const onGoodTransfer = useCallback(
+    (_: string, goodId: BigNumber) => {
+      if (goodId.eq(goodIdBigNumber)) {
+        setGoodInfo((goodInfo) => {
+          if (goodInfo) {
+            return { ...goodInfo, pending: true };
+          }
+        });
+      }
+    },
+    [goodIdBigNumber]
+  );
 
-  const updateUI = async () => {
+  const updateUI = useCallback(async () => {
     if (goodInfo?.pending) {
       try {
         const history = await getGoodOwnerHistory(goodIdBigNumber);
@@ -80,7 +101,7 @@ export default function GoodView({ goodId, contractConfigs }: GoodViewProps) {
         setHasError(true);
       }
     }
-  };
+  }, [getGoodOwnerHistory, goodIdBigNumber, goodInfo?.pending]);
 
   useContractEvents({
     contractAddress,
@@ -93,6 +114,7 @@ export default function GoodView({ goodId, contractConfigs }: GoodViewProps) {
   const handleHistoryClick = (history: string[]) =>
     setHistoryModalValues({
       isVisible: true,
+      goodId: goodIdBigNumber,
       list: history,
       onOk: () => setHistoryModalValues(defaultHistoryModalValues),
       onClose: () => setHistoryModalValues(defaultHistoryModalValues)
@@ -111,9 +133,17 @@ export default function GoodView({ goodId, contractConfigs }: GoodViewProps) {
     );
   }
 
+  if (isFetching) {
+    return (
+      <div className="flex justify-center pt-12">
+        <Loading size={50} spinnerColor="gray" />
+      </div>
+    );
+  }
+
   return goodInfo ? (
     <>
-      <div className="my-3 mx-auto px-1 w-1/2 md:w-1/3 lg:my-4 lg:px-4 lg:w-1/4">
+      <div className="my-3 mx-auto px-1 w-full md:w-1/3 lg:my-4 lg:px-4 lg:w-1/4">
         <Good
           goodId={goodIdBigNumber}
           name={goodInfo.name}

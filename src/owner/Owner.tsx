@@ -1,15 +1,17 @@
 import { useEffect, useState, useCallback } from "react";
 import { BigNumber } from "ethers";
-import { Button } from "web3uikit";
+import { Button, Loading } from "web3uikit";
 import {
   ContractConfiguration,
   GoodType,
   RegisterModalValuesType,
   TransferModalValuesType,
   HistoryModalValuesType,
+  QrValuesType,
   defaultRegisterModalValues,
   defaultTransferModalValues,
-  defaultHistoryModalValues
+  defaultHistoryModalValues,
+  defaultQrValues
 } from "../common/types";
 import useContractFunctions from "../contract/useContractFunctions";
 import useContractPublicFunctions from "../contract/useContractPublicFunctions";
@@ -19,7 +21,7 @@ import TransferModal from "./TransferModal";
 import RegisterModal from "./RegisterModal";
 import HistoryModal from "../common/HistoryModal";
 import GoodQr from "./GoodQr";
-import { compareAddresses } from "../common/utils";
+import { bigNumberListIncludes, compareAddresses } from "../common/utils";
 
 type OwnerProps = {
   account: string;
@@ -33,8 +35,8 @@ export default function Owner({
   contractConfigs
 }: OwnerProps) {
   const [goodsByOwner, setGoodsByOwner] = useState<GoodType[]>([]);
-  const [params, setParams] = useState<URLSearchParams>();
-  const [isQrVisible, setIsQrVisible] = useState(false);
+  const [isFetching, setIsFetching] = useState<boolean>(false);
+  const [qrValues, setQrValues] = useState<QrValuesType>(defaultQrValues);
   const [transferModalValues, setTransferModalValues] =
     useState<TransferModalValuesType>(defaultTransferModalValues);
   const [registerModalValues, setRegisterModalValues] =
@@ -56,46 +58,78 @@ export default function Owner({
     });
     const formatedGoodsData = await Promise.all(getGoodsData);
     setGoodsByOwner(formatedGoodsData);
+    setIsFetching(false);
   }, [account, getGoodCategory, getGoodName, getGoodsByOwner]);
 
   useEffect(() => {
-    updateUI();
+    const goodsIdsByOwner = goodsByOwner.map((good) => good.goodId);
+    if (goodsIdsByOwner.length) {
+      if (
+        qrValues.qrGoodId &&
+        !bigNumberListIncludes(goodsIdsByOwner, qrValues.qrGoodId)
+      ) {
+        setQrValues(defaultQrValues);
+      } else if (
+        transferModalValues.goodId &&
+        !bigNumberListIncludes(goodsIdsByOwner, transferModalValues.goodId)
+      ) {
+        setTransferModalValues(defaultTransferModalValues);
+      } else if (
+        historyModalValues.goodId &&
+        !bigNumberListIncludes(goodsIdsByOwner, historyModalValues.goodId)
+      ) {
+        setHistoryModalValues(defaultHistoryModalValues);
+      }
+    }
+  }, [
+    goodsByOwner,
+    historyModalValues.goodId,
+    qrValues.qrGoodId,
+    transferModalValues.goodId
+  ]);
+
+  useEffect(() => {
+    setIsFetching(true);
+    updateUI().finally(() => setIsFetching(false));
   }, [updateUI]);
 
-  const onGoodChange = (
-    goodId: BigNumber,
-    owner: string,
-    name: string,
-    category: string
-  ) => {
-    if (compareAddresses(owner, account)) {
-      setGoodsByOwner((goods) => [
-        ...goods,
-        { goodId, name, category, pending: true }
-      ]);
-    }
-  };
+  const onGoodChange = useCallback(
+    (goodId: BigNumber, owner: string, name: string, category: string) => {
+      if (compareAddresses(owner, account)) {
+        setGoodsByOwner((goods) => [
+          ...goods,
+          { goodId, name, category, pending: true }
+        ]);
+      }
+    },
+    [account]
+  );
 
-  const onGoodTransfer = (from: string, goodId: BigNumber) => {
-    if (compareAddresses(from, account)) {
-      setGoodsByOwner((goods) =>
-        goods.map((g) => {
-          if (g.goodId.eq(goodId)) {
-            return { ...g, pending: true };
-          }
-          return g;
-        })
-      );
-    }
-  };
+  const onGoodTransfer = useCallback(
+    (from: string, goodId: BigNumber) => {
+      if (compareAddresses(from, account)) {
+        setGoodsByOwner((goods) =>
+          goods.map((g) => {
+            if (g.goodId.eq(goodId)) {
+              return { ...g, pending: true };
+            }
+            return g;
+          })
+        );
+      }
+    },
+    [account]
+  );
 
-  const handleAvatarClick = (goodId: string) => {
+  const handleAvatarClick = async (goodId: BigNumber) => {
+    setQrValues({ qrGoodId: goodId, qrIsVisible: true, qrParams: null });
+    const history = await getGoodOwnerHistory(goodId);
     const urlParams = new URLSearchParams({
-      goodId,
-      chainId: chainId.toString()
+      goodId: goodId.toString(),
+      chainId: chainId.toString(),
+      nonce: history.length.toString()
     });
-    setParams(urlParams);
-    setIsQrVisible(true);
+    setQrValues((qrValues) => ({ ...qrValues, qrParams: urlParams }));
   };
 
   useContractEvents({
@@ -109,22 +143,28 @@ export default function Owner({
 
   return (
     <>
-      <div className="container my-12 mx-auto px-4 md:px-12">
-        <div className="flex flex-wrap -mx-1 lg:-mx-4">
-          {goodsByOwner.map((g) => (
-            <OwnerGood
-              key={g.goodId.toString()}
-              contractAddress={contractAddress}
-              good={g}
-              owner={account}
-              handleAvatarClick={handleAvatarClick}
-              getGoodOwnerHistory={getGoodOwnerHistory}
-              setTransferModalValues={setTransferModalValues}
-              setHistoryModalValues={setHistoryModalValues}
-            />
-          ))}
+      {isFetching ? (
+        <div className="flex justify-center pt-12">
+          <Loading size={50} spinnerColor="gray" />
         </div>
-      </div>
+      ) : (
+        <div className="container my-12 mx-auto px-4 md:px-12">
+          <div className="flex flex-wrap -mx-1 lg:-mx-4">
+            {goodsByOwner.map((g) => (
+              <OwnerGood
+                key={g.goodId.toString()}
+                contractAddress={contractAddress}
+                good={g}
+                owner={account}
+                handleAvatarClick={handleAvatarClick}
+                getGoodOwnerHistory={getGoodOwnerHistory}
+                setTransferModalValues={setTransferModalValues}
+                setHistoryModalValues={setHistoryModalValues}
+              />
+            ))}
+          </div>
+        </div>
+      )}
       <div className="fixed right-16 bottom-5">
         <Button
           color="red"
@@ -154,6 +194,7 @@ export default function Owner({
                   document.getElementById("categoryInputModal")?.focus();
                 } else {
                   mintGood({
+                    onSuccess: (res) => console.log(res),
                     params: { params: { name, category } }
                   });
                   setRegisterModalValues(defaultRegisterModalValues);
@@ -167,9 +208,9 @@ export default function Owner({
       <RegisterModal {...registerModalValues} />
       <HistoryModal {...historyModalValues} />
       <GoodQr
-        isVisible={isQrVisible}
-        setIsVisible={setIsQrVisible}
-        src={location.origin + "?" + params}
+        isVisible={qrValues.qrIsVisible}
+        setQrValues={setQrValues}
+        src={qrValues.qrParams ? location.origin + "?" + qrValues.qrParams : ""}
       />
     </>
   );

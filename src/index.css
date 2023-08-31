@@ -3,7 +3,7 @@
 @tailwind utilities;
 
 #regular > div {
-  width: 90vw;
+  width: 99vw;
   max-width: 550px;
 }
 
@@ -11,6 +11,10 @@
   max-height: 55vh;
   overflow: scroll;
 }
+
+.historyModal #content {
+  padding: 0;
+}  
 
 @media print {
   #closeGoodQr, #downloadGoodQr {

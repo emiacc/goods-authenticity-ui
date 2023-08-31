@@ -1,3 +1,5 @@
+import { BigNumber } from "ethers";
+
 export const truncateStr = (fullStr: string, strLen = 15) => {
   if (fullStr.length <= strLen) return fullStr;
 
@@ -15,4 +17,11 @@ export const truncateStr = (fullStr: string, strLen = 15) => {
 
 export const compareAddresses = (address1: string, address2: string) => {
   return address1.toLowerCase() === address2.toLowerCase();
+};
+
+export const bigNumberListIncludes = (
+  goodsIds: BigNumber[],
+  goodId: BigNumber
+) => {
+  return goodsIds.find((id) => id.eq(goodId));
 };

@@ -16,7 +16,7 @@ type OwnerGoodProps = {
   contractAddress: string;
   good: GoodType;
   owner: string;
-  handleAvatarClick: (goodId: string) => void;
+  handleAvatarClick: (goodId: BigNumber) => Promise<void>;
   getGoodOwnerHistory: (goodId: BigNumber) => Promise<string[]>;
   setTransferModalValues: React.Dispatch<
     React.SetStateAction<TransferModalValuesType>
@@ -37,6 +37,7 @@ export default function OwnerGood({
 }: OwnerGoodProps) {
   const { goodId, name, category, pending } = good;
   const [isLoadingHistory, setIsLoadingHistory] = useState(false);
+  const [overridePending, setOverridePending] = useState(false);
 
   const { safeTransferFrom } = useContractFunctions(contractAddress);
 
@@ -48,6 +49,7 @@ export default function OwnerGood({
   ) => {
     if (utils.isAddress(to) && !compareAddresses(owner, to)) {
       safeTransferFrom({
+        onSuccess: () => setOverridePending(true),
         params: {
           params: {
             from: owner,
@@ -66,6 +68,7 @@ export default function OwnerGood({
   const handleTransferClick = () => {
     setTransferModalValues({
       isVisible: true,
+      goodId: goodId,
       onOk: handleTransfer,
       onClose: () => setTransferModalValues(defaultTransferModalValues)
     });
@@ -77,6 +80,7 @@ export default function OwnerGood({
       .then((list) =>
         setHistoryModalValues({
           isVisible: true,
+          goodId,
           list,
           onOk: () => setHistoryModalValues(defaultHistoryModalValues),
           onClose: () => setHistoryModalValues(defaultHistoryModalValues)
@@ -86,14 +90,14 @@ export default function OwnerGood({
   };
 
   return (
-    <div className="my-1 px-1 w-1/2 md:w-1/3 lg:my-4 lg:px-4 lg:w-1/4">
+    <div className="my-1 px-1 w-full md:w-1/3 lg:my-4 lg:px-4 lg:w-1/4">
       <Good
         {...{
           goodId,
           name,
           category,
           owner,
-          pending,
+          pending: overridePending || pending,
           isLoadingHistory,
           handleHistoryClick,
           handleAvatarClick,

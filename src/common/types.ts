@@ -10,6 +10,7 @@ export type GoodType = {
 
 export type TransferModalValuesType = {
   isVisible: boolean;
+  goodId: BigNumber | null;
   onOk: (
     inputValue: string,
     setInputState: React.Dispatch<React.SetStateAction<InputProps["state"]>>
@@ -19,6 +20,7 @@ export type TransferModalValuesType = {
 
 export const defaultTransferModalValues: TransferModalValuesType = {
   isVisible: false,
+  goodId: null,
   onOk: () => {},
   onClose: () => {}
 };
@@ -42,6 +44,7 @@ export const defaultRegisterModalValues: RegisterModalValuesType = {
 
 export type HistoryModalValuesType = {
   isVisible: boolean;
+  goodId: BigNumber | null;
   list: string[];
   onOk: () => void;
   onClose: () => void;
@@ -49,9 +52,22 @@ export type HistoryModalValuesType = {
 
 export const defaultHistoryModalValues: HistoryModalValuesType = {
   isVisible: false,
+  goodId: null,
   list: [],
   onOk: () => {},
   onClose: () => {}
+};
+
+export type QrValuesType = {
+  qrParams: URLSearchParams | null;
+  qrGoodId: BigNumber | null;
+  qrIsVisible: boolean;
+};
+
+export const defaultQrValues: QrValuesType = {
+  qrParams: null,
+  qrGoodId: null,
+  qrIsVisible: false
 };
 
 export type ContractConfiguration = {

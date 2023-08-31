@@ -10,6 +10,7 @@ export default function HistoryModal({
   return (
     <Modal
       id="regular"
+      className="historyModal"
       okText="Close"
       title="History"
       hasCancel={false}

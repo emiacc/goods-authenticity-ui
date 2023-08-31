@@ -1,7 +1,6 @@
 import { BigNumber } from "ethers";
-import { Blockie, Loading } from "web3uikit";
+import { Blockie, Button, Loading } from "web3uikit";
 import { truncateStr } from "../common/utils";
-import Button from "../common/Button";
 
 type GoodProps = {
   goodId: BigNumber;
@@ -11,7 +10,7 @@ type GoodProps = {
   owner: string;
   isLoadingHistory?: boolean;
   handleTransferClick?: () => void;
-  handleAvatarClick?: (goodId: string) => void;
+  handleAvatarClick?: (goodId: BigNumber) => Promise<void>;
   handleHistoryClick: () => void;
 };
 
@@ -35,9 +34,7 @@ export default function Good({
       <header className="flex flex-col space-y-2 items-center justify-between p-2 md:p-4">
         <div
           className={`m-3 ${handleAvatarClick ? "cursor-pointer" : ""}`}
-          onClick={() =>
-            handleAvatarClick && handleAvatarClick(goodId.toString())
-          }
+          onClick={() => handleAvatarClick && handleAvatarClick(goodId)}
         >
           <Blockie size={15} seed={goodId.toString()} />
         </div>
@@ -51,7 +48,14 @@ export default function Good({
           {name}
         </h1>
         {handleTransferClick ? (
-          <Button text="Transfer" onClick={handleTransferClick} />
+          <Button
+            iconLayout="trailing"
+            size="regular"
+            text="Transfer"
+            theme="primary"
+            type="submit"
+            onClick={handleTransferClick}
+          />
         ) : null}
       </header>
       <footer className="flex flex-col p-6">
